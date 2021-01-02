@@ -8,7 +8,8 @@ export default new Vuex.Store({
     state: {
         posts: [],
         users: [],
-        comments: []
+        comments: [],
+        post: null
     },
     getters: {
         posts: state => {
@@ -19,6 +20,9 @@ export default new Vuex.Store({
         }
     },
     mutations: {
+        setPost(state, payload) {
+          state.post = payload
+        },
         setPosts(state, payload) {
             state.posts = payload
         },
@@ -41,6 +45,22 @@ export default new Vuex.Store({
         }
     },
     actions: {
+        fetchPostById(context, postId) {
+            let post = null
+            this.post = axios.get(`https://jsonplaceholder.typicode.com/posts/${postId}`)
+                .then(res => {
+                    post = res.data
+                    axios.get(`https://jsonplaceholder.typicode.com/users/${res.data.id}`)
+                        .then(res =>  {
+                            post.user = res.data
+                            axios.get(`https://jsonplaceholder.typicode.com/comments?postId=${post.id}`)
+                                .then(res => {
+                                    post.comments = res.data
+                                    context.commit('setPost', post)
+                                })
+                        })
+                })
+        },
         fetchPosts(context) {
             axios.get('https://jsonplaceholder.typicode.com/posts')
                 .then(res => {
@@ -53,16 +73,9 @@ export default new Vuex.Store({
                 .then(res => {
                     context.commit('setUsers', res.data)
                     context.commit('addUsersToPosts')
-                    context.dispatch('fetchComments')
+                    // context.dispatch('fetchComments')
                 })
         },
-        fetchComments(context) {
-            axios.get('https://jsonplaceholder.typicode.com/comments')
-                .then(res => {
-                    context.commit('setComments', res.data)
-                    context.commit('addCommentsToPosts')
-                })
-        }
     },
     modules: {}
 })

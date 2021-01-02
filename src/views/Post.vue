@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container v-if="post" >
     <v-row>
       <v-col>
         <h2>Информация о посте</h2>
@@ -33,7 +33,7 @@
       <v-col>
         <h2>Комментарии</h2>
       </v-col>
-          <Comment :key="com.id" v-for="com in post.comments" :commnet="com"></Comment>
+      <Comment :key="com.id" v-for="com in post.comments" :commnet="com"></Comment>
     </v-row>
   </v-container>
 
@@ -43,12 +43,20 @@
     // @ is an alias to /src
 
     import Comment from "../components/Comment";
+
     export default {
         name: 'Post',
+        data: () => {
+            return {
+            }
+        },
         components: {Comment},
+        mounted() {
+            this.$store.dispatch('fetchPostById', this.$route.params.id)
+        },
         computed: {
             post() {
-                return this.$store.getters.getPostById(this.$route.params.id)
+                return this.$store.state.post
             }
         },
     }
